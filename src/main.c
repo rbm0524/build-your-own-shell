@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     fgets(command, sizeof(command), stdin);
     command[strcspn(command, "\n")] = '\0';
 
-    if(strcmp(command, "exit")) {
+    if(!strcmp(command, "exit")) { // 문자열이 서로 같으면 0을 리턴한다.
       if(command[strcspn(command, "\0") - 1] == '0') {
         exit(0);
       } else {
