@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         exit(1);
       }
     } else if (strstr(command, "echo") != NULL) {
-      printf("%s\n", command[strstr(command, "echo") + 5]);
+      printf("%s\n", strstr(command, "echo") + 5);
     }
 
     printf("%s: command not found\n", command);
