@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "builtin.h"
+
+void builtin_exit(char *args);
+void builtin_echo(char *args);
+void builtin_type(char *args);
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
@@ -8,20 +13,22 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     printf("$ ");
-    char command[1024];
+    char command[512];
     fgets(command, sizeof(command), stdin);
     command[strcspn(command, "\n")] = '\0';
 
-    if(strstr(command, "exit") != NULL) { // 문자열이 서로 같으면 0을 리턴한다.
-      if(command[strcspn(command, "\0") - 1] == '0') {
-        exit(0);
-      } else {
-        exit(1);
-      }
-    } else if (strstr(command, "echo") != NULL) {
-      printf("%s\n", strstr(command, "echo") + 5);
+    char *cmd = strtok(command, " ");
+    char *args = strtok(NULL, " ");
+
+    // 명령어 해석하기
+    if(strstr(cmd, "exit") != NULL) { // 문자열이 서로 같으면 0을 리턴한다.
+      builtin_exit(args);
+    } else if (strstr(cmd, "echo") != NULL) {
+      builtin_echo(args);
+    } else if(strstr(cmd, "type") != NULL) {
+      builtin_type(args);
     } else {
-      printf("%s: command not found\n", command);
+      printf("%s: command not found\n", cmd);
     }
   }
 
