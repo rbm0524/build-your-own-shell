@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     command[strcspn(command, "\n")] = '\0';
 
     char *cmd = strtok(command, " ");
-    char *args = strtok(NULL, " ");
+    char *args = strtok(NULL, "\0"); // 나머지 전체를 인수로 취급
 
     // 명령어 해석하기
     if(strstr(cmd, "exit") != NULL) { // 문자열이 서로 같으면 0을 리턴한다.
