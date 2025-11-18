@@ -17,12 +17,24 @@ void builtin_echo(char *args) {
   }
 }
 
-void builtin_type(char *args) {
+void builtin_type(char *envPath, char *args) {
+    char *cmdPath[] = strtok(envPath, ":");
+    
     for(int i = 0; i < sizeof(commandTable)/sizeof(char*); i++) {
         if(!strcmp(args, commandTable[i])) {
-            printf("%s is a shell builtin\n", args);
+            printf("%s is %s\n", args, envPath);
             return;
         }
     }
+    
+    for(int i = 0; i < sizeof(cmdPath) / sizeof(char*); i++) {
+      DIR *dir = opendir(cmdPath[i]);
+      if(dir == NULL) continue;
+      while(readdir(dir) != NULL) {
+          printf("%s is %s\n", args, dir);
+          return;
+      }
+    }
+
     printf("%s: not found\n", args);
 }
