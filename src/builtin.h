@@ -19,7 +19,7 @@ void builtin_echo(char *args) {
 
 void builtin_type(char *args) {
     for(int i = 0; i < sizeof(commandTable)/sizeof(char*); i++) {
-        if(strcmp(args, commandTable[i])) {
+        if(!strcmp(args, commandTable[i])) {
             printf("%s is a shell builtin\n", args);
             return;
         }
