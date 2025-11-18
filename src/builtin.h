@@ -18,22 +18,26 @@ void builtin_echo(char *args) {
 }
 
 void builtin_type(char *envPath, char *args) {
-    char *cmdPath[] = strtok(envPath, ":");
     
     for(int i = 0; i < sizeof(commandTable)/sizeof(char*); i++) {
         if(!strcmp(args, commandTable[i])) {
-            printf("%s is %s\n", args, envPath);
+            printf("%s is a shell builtin\n", args);
             return;
         }
     }
     
-    for(int i = 0; i < sizeof(cmdPath) / sizeof(char*); i++) {
-      DIR *dir = opendir(cmdPath[i]);
-      if(dir == NULL) continue;
-      while(readdir(dir) != NULL) {
-          printf("%s is %s\n", args, dir);
-          return;
+    char *dir = strtok(envPath, ":");
+
+    while(dir != NULL) {
+      char *copyDir = strdup(dir); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
+      strcat(strcat(copyDir, "/"), args);
+      if(!(access(copyDir, F_OK))) {
+        printf("%s is %s\n", args, copyDir);
+        free(copyDir);
+        return;
       }
+      dir = strtok(NULL, ":");
+      free(copyDir);
     }
 
     printf("%s: not found\n", args);
