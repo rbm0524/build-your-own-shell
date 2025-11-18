@@ -5,10 +5,6 @@
 #include <unistd.h>
 #include "builtin.h"
 
-void builtin_exit(char *args);
-void builtin_echo(char *args);
-void builtin_type(char *args, char* envPath);
-
 int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
