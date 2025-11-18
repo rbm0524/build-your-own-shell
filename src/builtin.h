@@ -26,19 +26,19 @@ void builtin_type(char *envPath, char *args) {
         }
     }
     
-    char *dir = strtok(envPath, ":");
-
+    char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
+    char *dir = strtok(copyEnvPath, ":");
     while(dir != NULL) {
-      char *copyDir = strdup(dir); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
-      strcat(strcat(copyDir, "/"), args);
-      if(!(access(copyDir, F_OK))) {
-        printf("%s is %s\n", args, copyDir);
-        free(copyDir);
+      char pathBuffer[512];
+      snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, args);
+      if(!(access(pathBuffer, X_OK))) {
+        printf("%s is %s\n", args, pathBuffer);
+        free(copyEnvPath);
         return;
       }
       dir = strtok(NULL, ":");
-      free(copyDir);
     }
 
     printf("%s: not found\n", args);
+    free(copyEnvPath);
 }
