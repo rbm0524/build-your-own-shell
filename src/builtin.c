@@ -56,10 +56,15 @@ int executeProgram(char *envPath, char *program, char * args) {
     char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
     char *dir = strtok(copyEnvPath, ":");
     char pathBuffer[512];
+    char cmpBuffer[512];
+
+    memset(pathBuffer, 0, sizeof(pathBuffer));
+    memset(cmpBuffer, 0, sizeof(cmpBuffer));
+
     while(dir != NULL) {
       snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", program, args);
       if(!(access(pathBuffer, X_OK))) {
-        printf("%s is %s\n", args, pathBuffer);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         free(copyEnvPath);
         break;
       }
@@ -67,8 +72,7 @@ int executeProgram(char *envPath, char *program, char * args) {
       memset(pathBuffer, 0, sizeof(pathBuffer));
     }
 
-    if(*(pathBuffer) != 0) {
-      snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
+    if(!(memcmp(pathBuffer, cmpBuffer, 512))) {
       system(pathBuffer);
       return TRUE;
     }
