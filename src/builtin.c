@@ -65,7 +65,7 @@ int executeProgram(char *envPath, char *program, char * args) {
       int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
       if(!(access(pathBuffer, X_OK))) {
         if (args != NULL) {
-          snprintf(pathBuffer+charCount, sizeof(pathBuffer), "%s %s", program, args);
+          snprintf(pathBuffer+charCount, sizeof(pathBuffer), "%s", args);
         }
         free(copyEnvPath);
         break;
