@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
       builtin_type(envPath, args);
     } else if(strstr(cmd, "pwd") != NULL) {
       builtin_pwd();
+    } else if(strstr(cmd, "cd") != NULL) {
+      builtin_cd(args);
     } else { // builtin 명령어가 아니면
       int found = executeProgram(envPath, cmd, args);
       if(!found) printf("%s: command not found\n", cmd);
