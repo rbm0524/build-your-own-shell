@@ -8,7 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 
-char *commandTable[] = {"exit", "echo", "type", "pwd"};
+char *commandTable[] = {"exit", "echo", "type", "pwd","cd"};
 
 void builtin_exit(char *args) {
   if (args != NULL) {
@@ -100,4 +100,11 @@ void builtin_pwd() {
   char currentWorkingDir[PATH_MAX];
   getcwd(currentWorkingDir, PATH_MAX);
   printf("%s\n", currentWorkingDir);
+}
+
+void builtin_cd(char *args) {
+  char moveWorkingDir[PATH_MAX];
+
+  sprintf(moveWorkingDir, "%s", args);
+  chdir(moveWorkingDir);
 }
