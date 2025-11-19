@@ -20,11 +20,19 @@ void builtin_exit(char *args) {
 }
 
 void builtin_echo(char *args) {
-  if (args != NULL) {
-    printf("%s\n", args);
-  } else {
-    printf("\n");
+
+  int i = 0;
+  while(*(args+i) != '\0') {
+    if(*(args+i) != '\'') {
+      if((*(args+i-1) == *(args+i) && *(args+i) == ' ')) {
+        i++;
+        continue;
+      }
+      printf("%c", *(args + i));
+    }
+    i++;
   }
+  printf("\n");
 }
 
 void builtin_type(char *envPath, char *args) {
