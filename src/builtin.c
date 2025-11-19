@@ -79,7 +79,7 @@ int executeProgram(char *envPath, char *program, char * args) {
         }
     
         while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-          printf("%s\n", buffer);
+          printf("%s", buffer);
         }
         
         pclose(fp);
