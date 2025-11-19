@@ -63,7 +63,7 @@ int executeProgram(char *envPath, char *program, char * args) {
     while(dir != NULL) {
       int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
       if(!(access(pathBuffer, X_OK))) {
-        char *currentWorkingDir;
+        char currentWorkingDir[PATH_MAX];
         getcwd(currentWorkingDir, PATH_MAX);
         chdir(pathBuffer);
 
@@ -97,7 +97,7 @@ int executeProgram(char *envPath, char *program, char * args) {
 }
 
 void builtin_pwd() {
-  char *currentWorkingDir;
+  char currentWorkingDir[PATH_MAX];
   getcwd(currentWorkingDir, PATH_MAX);
   printf("%s\n", currentWorkingDir);
 }
