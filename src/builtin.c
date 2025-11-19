@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <limits.h>
 #define TRUE 1
 #define FALSE 0
 
@@ -64,10 +65,16 @@ int executeProgram(char *envPath, char *program, char * args) {
     while(dir != NULL) {
       int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
       if(!(access(pathBuffer, X_OK))) {
+        char *currentWorkingDir;
+        getcwd(currentWorkingDir, PATH_MAX);
+        chdir(pathBuffer);
+
         if (args != NULL) {
-          snprintf(pathBuffer+charCount, sizeof(pathBuffer), " %s", args);
+          snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
+
         free(copyEnvPath);
+        chdir(currentWorkingDir);
         break;
       }
       dir = strtok(NULL, ":");
