@@ -62,9 +62,9 @@ int executeProgram(char *envPath, char *program, char * args) {
     memset(cmpBuffer, 0, sizeof(cmpBuffer));
 
     while(dir != NULL) {
-      snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", program, args);
+      int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
       if(!(access(pathBuffer, X_OK))) {
-        snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
+        snprintf(pathBuffer+charCount-1, sizeof(pathBuffer), "%s %s", program, args);
         free(copyEnvPath);
         break;
       }
@@ -73,10 +73,21 @@ int executeProgram(char *envPath, char *program, char * args) {
     }
 
     if(!(memcmp(pathBuffer, cmpBuffer, 512))) {
-      system(pathBuffer);
+      FILE *fp = popen(pathBuffer, "r");
+      char buffer[512] = {0};
+
+      if(fp == NULL) {
+        return FALSE;        
+      }
+
+      while(fgets(buffer, sizeof(buffer), fp) != NULL) {
+        printf("%s\n", buffer);
+        memset(buffer, 0, sizeof(buffer));
+      }
+      
+      pclose(fp);
       return TRUE;
     }
 
     return FALSE;
-
 }
