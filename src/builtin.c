@@ -106,5 +106,10 @@ void builtin_cd(char *args) {
   char moveWorkingDir[PATH_MAX];
 
   sprintf(moveWorkingDir, "%s", args);
-  chdir(moveWorkingDir);
+
+  if(access(moveWorkingDir, X_OK) == 0) {
+    chdir(moveWorkingDir);
+  } else {
+    printf("cd: %s: No such file or directory\n", args);
+  }
 }
