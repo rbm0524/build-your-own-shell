@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
     char *cmd = strtok(command, " ");
     char *args = strtok(NULL, "\0"); // 나머지 전체를 인자로 취급
-
+    
     // 명령어 해석하기
     if(strstr(cmd, "exit") != NULL) { // 문자열이 서로 같으면 0을 리턴한다.
       builtin_exit(args);
@@ -26,8 +26,9 @@ int main(int argc, char *argv[]) {
       builtin_echo(args);
     } else if(strstr(cmd, "type") != NULL) {
       builtin_type(envPath, args);
-    } else {
-      printf("%s: command not found\n", cmd);
+    } else { // builtin 명령어가 아니면
+      int found = executeProgram(envPath, cmd, args);
+      if(!found) printf("%s: command not found\n", cmd);
     }
   }
 
