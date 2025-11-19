@@ -3,6 +3,9 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#define TRUE 1
+#define FALSE 0
 
 char *commandTable[] = {"exit", "echo", "type"};
 
@@ -47,4 +50,29 @@ void builtin_type(char *envPath, char *args) {
 
     printf("%s: not found\n", args);
     free(copyEnvPath);
+}
+
+int executeProgram(char *envPath, char *program, char * args) {
+    char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
+    char *dir = strtok(copyEnvPath, ":");
+    char pathBuffer[512];
+    while(dir != NULL) {
+      snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", program, args);
+      if(!(access(pathBuffer, X_OK))) {
+        printf("%s is %s\n", args, pathBuffer);
+        free(copyEnvPath);
+        break;
+      }
+      dir = strtok(NULL, ":");
+      memset(pathBuffer, 0, sizeof(pathBuffer));
+    }
+
+    if(*(pathBuffer) != 0) {
+      snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
+      system(pathBuffer);
+      return TRUE;
+    }
+
+    return FALSE;
+
 }
