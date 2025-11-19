@@ -8,7 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 
-char *commandTable[] = {"exit", "echo", "type"};
+char *commandTable[] = {"exit", "echo", "type", "pwd"};
 
 void builtin_exit(char *args) {
   if (args != NULL) {
@@ -94,4 +94,10 @@ int executeProgram(char *envPath, char *program, char * args) {
     }
 
     return FALSE;
+}
+
+void builtin_pwd() {
+  char *currentWorkingDir;
+  getcwd(currentWorkingDir, PATH_MAX);
+  printf("%s\n", currentWorkingDir);
 }
