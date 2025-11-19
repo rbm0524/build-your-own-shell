@@ -116,9 +116,9 @@ void builtin_cd(char *args) {
 
   while(tokenized != NULL) {
     if(strcmp(tokenized , "~") == 0) {
-      charCount = sprintf(moveWorkingDir + charCount, "%s/", homePath) + 1; // homepath는 /usr/home 이렇게 들어가니까
+      charCount += sprintf(moveWorkingDir + charCount, "%s/", homePath); // homepath는 /usr/home 이렇게 들어가니까
     } else {
-      charCount = sprintf(moveWorkingDir + charCount, "%s/", tokenized) + 1;
+      charCount += sprintf(moveWorkingDir + charCount, "%s/", tokenized);
     }
     tokenized = strtok(NULL, "/");
   }
