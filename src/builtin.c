@@ -72,7 +72,7 @@ int executeProgram(char *envPath, char *program, char * args) {
       memset(pathBuffer, 0, sizeof(pathBuffer));
     }
 
-    if(!(memcmp(pathBuffer, cmpBuffer, 512))) {
+    if(memcmp(pathBuffer, cmpBuffer, 512) != 0) {
       FILE *fp = popen(pathBuffer, "r");
       char buffer[512] = {0};
 
