@@ -107,6 +107,13 @@ void builtin_cd(char *args) {
   char * homePath = getenv("HOME");
   char *tokenized = strtok(args, "/");
   int charCount = 0;
+
+  // 시작 글자가 /이면 
+  if(*args =='/') {
+    moveWorkingDir[0] = '/';
+    charCount++;
+  }
+
   while(tokenized != NULL) {
     if(strcmp(tokenized , "~") == 0) {
       charCount = sprintf(moveWorkingDir + charCount, "%s/", homePath); // homepath는 /usr/home 이렇게 들어가니까
