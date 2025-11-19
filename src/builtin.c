@@ -20,16 +20,21 @@ void builtin_exit(char *args) {
 }
 
 void builtin_echo(char *args) {
-
   int i = 0;
+  int in_single_quote = 0;
   while(*(args+i) != '\0') {
-    if(*(args+i) != '\'') {
-      if((*(args+i-1) == *(args+i) && *(args+i) == ' ')) {
+    if(*(args+i) == '\'') {
+      in_single_quote = !in_single_quote;
+    }
+
+    if(in_single_quote) {
+      if(*(args+i) != '\'') printf("%c", *(args + i));
+    } else {
+      if((*(args+i) == '\'') || (*(args+i-1) == *(args+i) && *(args+i) == ' ')) {
         i++;
         continue;
       }
-      printf("%c", *(args + i));
-    }
+      printf("%c", *(args + i));}
     i++;
   }
   printf("\n");
