@@ -104,12 +104,22 @@ void builtin_pwd() {
 
 void builtin_cd(char *args) {
   char moveWorkingDir[PATH_MAX];
-
-  sprintf(moveWorkingDir, "%s", args);
+  char * homePath = getenv("HOME");
+  char *tokenized = strtok(args, "/");
+  int charCount = 0;
+  while(tokenized != NULL) {
+    if(strcmp(tokenized , "~") == 0) {
+      charCount = sprintf(moveWorkingDir + charCount, "%s/", homePath); // homepath는 /usr/home 이렇게 들어가니까
+    } else {
+      charCount = sprintf(moveWorkingDir + charCount, "%s/", tokenized);
+    }
+    tokenized = strtok(NULL, "/");
+  }
 
   if(access(moveWorkingDir, X_OK) == 0) {
     chdir(moveWorkingDir);
   } else {
     printf("cd: %s: No such file or directory\n", args);
   }
+
 }
