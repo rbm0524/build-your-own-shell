@@ -57,10 +57,8 @@ int executeProgram(char *envPath, char *program, char * args) {
     char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
     char *dir = strtok(copyEnvPath, ":");
     char pathBuffer[512];
-    char cmpBuffer[512];
 
     memset(pathBuffer, 0, sizeof(pathBuffer));
-    memset(cmpBuffer, 0, sizeof(cmpBuffer));
 
     while(dir != NULL) {
       int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
@@ -73,29 +71,27 @@ int executeProgram(char *envPath, char *program, char * args) {
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
 
+        FILE *fp = popen(pathBuffer, "r");
+        char buffer[512] = {0};
+    
+        if(fp == NULL) {
+          return FALSE;        
+        }
+    
+        while(fgets(buffer, sizeof(buffer), fp) != NULL) {
+          printf("%s\n", buffer);
+          memset(buffer, 0, sizeof(buffer));
+        }
+        
+        pclose(fp);
+        
         free(copyEnvPath);
         chdir(currentWorkingDir);
-        break;
+        return TRUE;
       }
+
       dir = strtok(NULL, ":");
       memset(pathBuffer, 0, sizeof(pathBuffer));
-    }
-
-    if(memcmp(pathBuffer, cmpBuffer, 512) != 0) {
-      FILE *fp = popen(pathBuffer, "r");
-      char buffer[512] = {0};
-
-      if(fp == NULL) {
-        return FALSE;        
-      }
-
-      while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-        printf("%s\n", buffer);
-        memset(buffer, 0, sizeof(buffer));
-      }
-      
-      pclose(fp);
-      return TRUE;
     }
 
     return FALSE;
