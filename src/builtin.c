@@ -80,7 +80,6 @@ int executeProgram(char *envPath, char *program, char * args) {
     
         while(fgets(buffer, sizeof(buffer), fp) != NULL) {
           printf("%s\n", buffer);
-          memset(buffer, 0, sizeof(buffer));
         }
         
         pclose(fp);
