@@ -33,7 +33,7 @@ void builtin_echo(char *args) {
       if(in_single_quote) {
         if(*(args+i) != '\'') printf("%c", *(args + i));
       } else {
-        if((*(args+i-1) != *(args+i) && *(args+i) == ' ') || (*(args+i) != ' ' && *(args+i) != '\"' && *(args+i) != '\'')) {
+        if((*(args+i-1) != *(args+i) && *(args+i) == ' ') || (*(args+i) != ' ' && *(args+i) != '\"' && *(args+i) != '\'' && *(args+i) != '\\')) {
           printf("%c", *(args + i));
         }
       }
