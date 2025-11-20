@@ -89,10 +89,8 @@ void builtin_echo(char *args) {
     while(fgets(copybuffer, sizeof(buffer), buffer) != NULL){
       printf("%s", copybuffer);
     }
-    printf("\n");
+    fclose(buffer);
   }
-
-  fclose(buffer);
 }
 
 void builtin_type(char *envPath, char *args) {
