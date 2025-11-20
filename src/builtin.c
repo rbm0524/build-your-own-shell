@@ -33,6 +33,9 @@ void builtin_echo(char *args) {
     
     if(in_double_quote) {
       if(*(args+i) != '\"') {
+        if(*(args+i) == '\\') {
+          i++;
+        }
         printf("%c", *(args + i));
       }
     } else {
