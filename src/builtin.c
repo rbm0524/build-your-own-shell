@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <limits.h>
+#include "utils.h"
 #define TRUE 1
 #define FALSE 0
 
@@ -104,6 +105,16 @@ int executeProgram(char *envPath, char *program, char * args) {
         char currentWorkingDir[PATH_MAX];
         getcwd(currentWorkingDir, PATH_MAX);
         chdir(pathBuffer);
+        
+        char *existRedirect = strchr(args, '>');
+        char *redirectPath = existRedirect + 1;
+        if(existRedirect) {
+          *existRedirect = '\0';          
+          ltrim(redirectPath);
+          rtrim(redirectPath);
+          ltrim(args);
+          rtrim(args);
+        }
 
         if (args != NULL) {
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
@@ -117,7 +128,12 @@ int executeProgram(char *envPath, char *program, char * args) {
         }
     
         while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-          printf("%s", buffer);
+          if(redirectPath) {
+            FILE *redirectFile = fopen(redirectPath, "a+");
+            fputs(buffer, redirectFile);
+          } else {
+            printf("%s", buffer);
+          }
         }
         
         pclose(fp);
