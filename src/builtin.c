@@ -34,9 +34,12 @@ void builtin_echo(char *args) {
     if(in_double_quote) {
       if(*(args+i) != '\"') {
         if(*(args+i) == '\\') {
-          i++;
+          printf("%c", *(args + i + 1));
+          i += 2;
+          continue;
+        } else {
+          printf("%c", *(args + i));
         }
-        printf("%c", *(args + i));
       }
     } else {
       if(in_single_quote) {
@@ -47,15 +50,15 @@ void builtin_echo(char *args) {
         }
       }
     }
-
+    
     if(*(args+i) == '\'' && !in_double_quote) {
       in_single_quote = !in_single_quote;
     }
-
+    
     if(*(args+i) == '\"' && !in_single_quote) {
       in_double_quote = !in_double_quote;
     }
-
+    
     i++;
   }
 
