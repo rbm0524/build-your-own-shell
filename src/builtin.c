@@ -160,7 +160,7 @@ int executeProgram(char *envPath, char *program, char * args) {
         
         while(fgets(buffer, sizeof(buffer), fp) != NULL) {
           if(redirectPath != NULL) {
-            FILE *redirectFile = fopen(redirectPath, "w");
+            FILE *redirectFile = fopen(redirectPath, "a+");
             fputs(buffer, redirectFile);
             fclose(redirectFile);
           } else {
