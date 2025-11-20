@@ -24,10 +24,27 @@ void builtin_echo(char *args) {
   int i = 0;
   int in_single_quote = 0;
   int in_double_quote = 0;
+  FILE *buffer = stdout;
+
+  char *existRedirect = strstr(args, ">");
+  char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
+  if(existRedirect != NULL) {
+    *existRedirect = '\0';
+    if(*(existRedirect - 1) == '1') {
+      *(existRedirect - 1) = ' ';
+    }      
+    ltrim(&redirectPath);
+    rtrim(redirectPath);
+    ltrim(&args);
+    rtrim(args);
+    buffer = fopen(redirectPath, "a+");
+  }
+
   while(*(args+i) != '\0') {
 
     if(!in_single_quote && !in_double_quote && *(args+i) == '\\') {
-      printf("%c", *(args + i + 1));
+      // printf("%c", *(args + i + 1));
+      fprintf(buffer, "%c", *(args + i + 1));
       i += 2;
       continue;
     }
@@ -35,19 +52,22 @@ void builtin_echo(char *args) {
     if(in_double_quote) {
       if(*(args+i) != '\"') {
         if(*(args+i) == '\\') {
-          printf("%c", *(args + i + 1));
+          // printf("%c", *(args + i + 1));
+          fprintf(buffer, "%c", *(args + i + 1));
           i += 2;
           continue;
         } else {
-          printf("%c", *(args + i));
+          //printf("%c", *(args + i));
+          fprintf(buffer, "%c", *(args + i));
         }
       }
     } else {
       if(in_single_quote) {
-        if(*(args+i) != '\'') printf("%c", *(args + i));
+        if(*(args+i) != '\'') fprintf(buffer, "%c", *(args + i)); //printf("%c", *(args + i));
       } else {
         if((*(args+i-1) != *(args+i) && *(args+i) == ' ') || (*(args+i) != ' ' && *(args+i) != '\"' && *(args+i) != '\'')) {
-          printf("%c", *(args + i));
+          // printf("%c", *(args + i));
+          fprintf(buffer, "%c", *(args + i));
         }
       }
     }
@@ -62,8 +82,16 @@ void builtin_echo(char *args) {
     
     i++;
   }
+  fprintf(buffer, "%s", "\n");
 
-  printf("\n");
+  if(is_stdout(buffer)) {
+    char copybuffer[512];
+    while(fgets(copybuffer, sizeof(buffer), buffer) != NULL){
+      printf("%s", copybuffer);
+    }
+  }
+
+  fclose(buffer);
 }
 
 void builtin_type(char *envPath, char *args) {
@@ -107,12 +135,15 @@ int executeProgram(char *envPath, char *program, char * args) {
         chdir(pathBuffer);
         
         char *existRedirect = strchr(args, '>');
-        char *redirectPath = existRedirect + 1;
-        if(existRedirect) {
-          *existRedirect = '\0';          
-          ltrim(redirectPath);
+        char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
+        if(existRedirect != NULL) {
+          *existRedirect = '\0';
+          if(*(existRedirect - 1) == '1') {
+            *(existRedirect - 1) = ' ';
+          }      
+          ltrim(&redirectPath);
           rtrim(redirectPath);
-          ltrim(args);
+          ltrim(&args);
           rtrim(args);
         }
 
@@ -122,15 +153,16 @@ int executeProgram(char *envPath, char *program, char * args) {
 
         FILE *fp = popen(pathBuffer, "r");
         char buffer[512] = {0};
-    
+        
         if(fp == NULL) {
           return FALSE;        
         }
-    
+        
         while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-          if(redirectPath) {
-            FILE *redirectFile = fopen(redirectPath, "a+");
+          if(redirectPath != NULL) {
+            FILE *redirectFile = fopen(redirectPath, "w");
             fputs(buffer, redirectFile);
+            fclose(redirectFile);
           } else {
             printf("%s", buffer);
           }
