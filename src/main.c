@@ -40,6 +40,9 @@ int main(int argc, char *argv[]) {
     } else if(strstr(cmd, "cd") != NULL) {
       builtin_cd(args);
     } else { // builtin 명령어가 아니면
+      if(*cmd == '\'' || *cmd == '\"') {
+        cmd = "cat";
+      }
       int found = executeProgram(envPath, cmd, args);
       if(!found) printf("%s: command not found\n", cmd);
     }
