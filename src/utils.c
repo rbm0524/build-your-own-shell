@@ -1,8 +1,9 @@
 #include <string.h>
+#include <stdio.h>
 
-void ltrim(char *string) {
-    while(*string == ' ') {
-        string++;
+void ltrim(char **string) {
+    while(**string == ' ') {
+        (*string)++;
     }
 }
 void rtrim(char *string) {
@@ -13,4 +14,8 @@ void rtrim(char *string) {
     if(length > 0) {
         *(string + length + 1) = '\0';
     }
+}
+
+int is_stdout(FILE *fp) {
+    return (fp == stdout);
 }
