@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include "builtin.h"
+#include "utils.h"
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
