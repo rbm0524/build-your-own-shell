@@ -84,11 +84,9 @@ void builtin_echo(char *args) {
   }
   fprintf(buffer, "%s", "\n");
 
-  if(is_stdout(buffer)) {
-    char copybuffer[512];
-    while(fgets(copybuffer, sizeof(buffer), buffer) != NULL){
-      printf("%s", copybuffer);
-    }
+  char copybuffer[512];
+  while(fgets(copybuffer, sizeof(buffer), buffer) != NULL){
+    printf("%s", copybuffer);
   }
 
   fclose(buffer);
