@@ -15,10 +15,19 @@ int main(int argc, char *argv[]) {
     char command[512];
     fgets(command, sizeof(command), stdin);
     command[strcspn(command, "\n")] = '\0';
+    char *cmd;
+    char *args;
 
-    char *cmd = strtok(command, " ");
-    char *args = strtok(NULL, "\0"); // 나머지 전체를 인자로 취급
-    
+    if(command[0] == '\'') {
+      cmd = strtok(command+1, "\'");
+      
+    } else if (command[0] == '\"') {
+      cmd = strtok(command+1, "\"");
+    } else {
+      cmd = strtok(command, " ");
+    } 
+    args = strtok(NULL, "\0"); // 나머지 전체를 인자로 취급
+ 
     // 명령어 해석하기
     if(strstr(cmd, "exit") != NULL) { // 문자열이 서로 같으면 0을 리턴한다.
       builtin_exit(args);
