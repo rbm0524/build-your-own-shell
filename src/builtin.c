@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +26,7 @@ void builtin_echo(char *args) {
   int in_single_quote = 0;
   int in_double_quote = 0;
   FILE *buffer = stdout;
+  int isErrBuffer = FALSE;
 
   char *existRedirect = strstr(args, ">");
   char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
@@ -32,12 +34,15 @@ void builtin_echo(char *args) {
     *existRedirect = '\0';
     if(*(existRedirect - 1) == '1') {
       *(existRedirect - 1) = ' ';
-    }      
+    } else if(*(existRedirect - 1) == '2') {
+      *(existRedirect - 1) = ' ';
+      isErrBuffer = TRUE;
+    }
     ltrim(&redirectPath);
     rtrim(redirectPath);
     ltrim(&args);
     rtrim(args);
-    buffer = fopen(redirectPath, "a+");
+    buffer = fopen(redirectPath, "w+");
   }
 
   while(*(args+i) != '\0') {
@@ -82,12 +87,17 @@ void builtin_echo(char *args) {
     
     i++;
   }
-  fprintf(buffer, "%s", "\n");
+  
+  fprintf(buffer, "%s", "\n"); // 커서가 맨 끝으로 이동한다.
+  rewind(buffer); // 되감기
 
   if(buffer != stdout) {
     char copybuffer[512];
     while(fgets(copybuffer, sizeof(copybuffer), buffer) != NULL){
-      printf("%s", copybuffer);
+      if(isErrBuffer) {
+        fprintf(stderr, "%s", copybuffer);
+      }
+      // printf("%s", copybuffer);
     }
     fclose(buffer);
   }
@@ -133,8 +143,9 @@ int executeProgram(char *envPath, char *program, char * args) {
         char currentWorkingDir[PATH_MAX];
         getcwd(currentWorkingDir, PATH_MAX);
         chdir(pathBuffer);
-        /*
+        
         if (args != NULL) {
+        /*
           char *existRedirect = strstr(args, ">");
           char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
           if(existRedirect != NULL) {
@@ -152,9 +163,11 @@ int executeProgram(char *envPath, char *program, char * args) {
             if(printbuffer == stdout) printbuffer = fopen(redirectPath, "a+");
           }
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
+          */
+          snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
-        */
-        snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
+        
+        printf("%s", pathBuffer);
         FILE *fp = popen(pathBuffer, "r"); // 명령과 모드, 실행 결과는 fp에 저장된다.
         
         if(fp == NULL) {
@@ -172,6 +185,7 @@ int executeProgram(char *envPath, char *program, char * args) {
 
           // printf("%s", copybuffer);
         }
+
         if(printbuffer != stdout) {
           fclose(printbuffer);
         }
