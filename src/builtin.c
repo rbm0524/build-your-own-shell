@@ -133,25 +133,28 @@ int executeProgram(char *envPath, char *program, char * args) {
         char currentWorkingDir[PATH_MAX];
         getcwd(currentWorkingDir, PATH_MAX);
         chdir(pathBuffer);
-        
+        /*
         if (args != NULL) {
           char *existRedirect = strstr(args, ">");
           char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
           if(existRedirect != NULL) {
             *existRedirect = '\0';
-            if(*(existRedirect - 1) == '1') {
-              *(existRedirect - 1) = ' ';
-            }      
+            *(existRedirect - 1) = ' ';
+            /*
+            if(*(existRedirect - 1) == '2') {
+              printbuffer = stderr;
+            }
+              
             ltrim(&redirectPath);
             rtrim(redirectPath);
             ltrim(&args);
             rtrim(args);
-
-            printbuffer = fopen(redirectPath, "a+");
+            if(printbuffer == stdout) printbuffer = fopen(redirectPath, "a+");
           }
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
-
+        */
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         FILE *fp = popen(pathBuffer, "r"); // 명령과 모드, 실행 결과는 fp에 저장된다.
         
         if(fp == NULL) {
@@ -160,7 +163,14 @@ int executeProgram(char *envPath, char *program, char * args) {
 
         char copybuffer[512];
         while(fgets(copybuffer, sizeof(copybuffer), fp) != NULL){
-          printf("%s", copybuffer);
+          /*
+          if(printbuffer == stderr) {
+            continue;
+          }
+            */
+          fprintf(printbuffer, "%s", copybuffer);
+
+          // printf("%s", copybuffer);
         }
         if(printbuffer != stdout) {
           fclose(printbuffer);
