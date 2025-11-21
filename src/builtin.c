@@ -167,7 +167,6 @@ int executeProgram(char *envPath, char *program, char * args) {
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
         
-        printf("%s", pathBuffer);
         FILE *fp = popen(pathBuffer, "r"); // 명령과 모드, 실행 결과는 fp에 저장된다.
         
         if(fp == NULL) {
@@ -185,7 +184,6 @@ int executeProgram(char *envPath, char *program, char * args) {
 
           // printf("%s", copybuffer);
         }
-        printf("\n");
 
         if(printbuffer != stdout) {
           fclose(printbuffer);
