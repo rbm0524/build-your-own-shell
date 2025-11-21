@@ -86,7 +86,7 @@ void builtin_echo(char *args) {
 
   if(buffer != stdout) {
     char copybuffer[512];
-    while(fgets(copybuffer, sizeof(buffer), buffer) != NULL){
+    while(fgets(copybuffer, sizeof(copybuffer), buffer) != NULL){
       printf("%s", copybuffer);
     }
     fclose(buffer);
@@ -120,53 +120,52 @@ void builtin_type(char *envPath, char *args) {
 }
 
 int executeProgram(char *envPath, char *program, char * args) {
-    char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
-    char *dir = strtok(copyEnvPath, ":");
-    char pathBuffer[512];
+  char *copyEnvPath = strdup(envPath); // malloc을 호출하여 string의 사본에 대한 포인터를 반환
+  char *dir = strtok(copyEnvPath, ":");
+  char pathBuffer[512];
+  FILE *printbuffer = stdout;
 
     memset(pathBuffer, 0, sizeof(pathBuffer));
 
     while(dir != NULL) {
-      int charCount = snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
+      snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dir, program);
       if(!(access(pathBuffer, X_OK))) {
         char currentWorkingDir[PATH_MAX];
         getcwd(currentWorkingDir, PATH_MAX);
         chdir(pathBuffer);
         
-        char *existRedirect = strchr(args, '>');
-        char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
-        if(existRedirect != NULL) {
-          *existRedirect = '\0';
-          if(*(existRedirect - 1) == '1') {
-            *(existRedirect - 1) = ' ';
-          }      
-          ltrim(&redirectPath);
-          rtrim(redirectPath);
-          ltrim(&args);
-          rtrim(args);
-        }
-
         if (args != NULL) {
+          char *existRedirect = strstr(args, ">");
+          char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
+          if(existRedirect != NULL) {
+            *existRedirect = '\0';
+            if(*(existRedirect - 1) == '1') {
+              *(existRedirect - 1) = ' ';
+            }      
+            ltrim(&redirectPath);
+            rtrim(redirectPath);
+            ltrim(&args);
+            rtrim(args);
+
+            printbuffer = fopen(redirectPath, "a+");
+          }
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
 
-        FILE *fp = popen(pathBuffer, "r");
-        char buffer[512] = {0};
+        FILE *fp = popen(pathBuffer, "r"); // 명령과 모드, 실행 결과는 fp에 저장된다.
         
         if(fp == NULL) {
           return FALSE;        
         }
-        
-        while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-          if(redirectPath != NULL) {
-            FILE *redirectFile = fopen(redirectPath, "a+");
-            fputs(buffer, redirectFile);
-            fclose(redirectFile);
-          } else {
-            printf("%s", buffer);
-          }
+
+        char copybuffer[512];
+        while(fgets(copybuffer, sizeof(copybuffer), fp) != NULL){
+          printf("%s", copybuffer);
         }
-        
+        if(printbuffer != stdout) {
+          fclose(printbuffer);
+        }
+
         pclose(fp);
         
         free(copyEnvPath);
