@@ -185,6 +185,7 @@ int executeProgram(char *envPath, char *program, char * args) {
 
           // printf("%s", copybuffer);
         }
+        printf("\n");
 
         if(printbuffer != stdout) {
           fclose(printbuffer);
