@@ -153,7 +153,7 @@ Ubuntu 22.04 환경에서 `gcc`를 사용하여 직접 빌드하고 실행하는
     `readline` 라이브러리를 링크하여 소스 파일을 컴파일합니다.
 
     ```bash
-    gcc src/main.c src/builtin.c src/utils.c -lreadline -o a.out
+    gcc src/main.c src/builtin.c src/utils.c
     ```
 
 2.  **셸 실행**:
