@@ -37,14 +37,15 @@ void builtin_echo(char *args) {
 
     if(*(existRedirect - 1) == '1') {
       *(existRedirect - 1) = ' ';
-      ltrim(&args);
-      rtrim(args);
-      buffer = fopen(redirectPath, "w");
     } else if(*(existRedirect - 1) == '2') {
       *(existRedirect - 1) = ' ';
       ltrim(&args);
       rtrim(args);
       errorFile = fopen(redirectPath, "w");
+    } else {
+      ltrim(&args);
+      rtrim(args);
+      buffer = fopen(redirectPath, "w");
     }
     
 
