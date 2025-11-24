@@ -1,31 +1,164 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/2da81758-1777-4fbc-bd99-f439d58bb8f2)](https://app.codecrafters.io/users/rbm0524?r=2qF)
+# Simple C Shell
 
-This is a starting point for C solutions to the
-"Build Your Own Shell" Challenge.
+이 프로젝트는 C언어로 구현된 간단한 유닉스 셸입니다. 기본적인 내장 명령어와 외부 프로그램 실행 기능을 제공합니다.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+## 주요 기능
 
-# Passing the first stage
+이 셸은 CodeCrafters 챌린지의 요구사항에 따라 다음과 같은 핵심 기능들을 구현했습니다.
 
-The entry point for your `shell` implementation is in `src/main.c`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+- **명령어 프롬프트 및 입력 처리**
+  - `$` 기호를 프롬프트로 사용하여 사용자 입력을 받습니다.
+  - 입력된 라인을 공백 기준으로 명령어와 인자로 분리합니다.
 
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
-```
+- **외부 프로그램 실행**
+  - 사용자가 입력한 명령어가 내장 명령어가 아닐 경우, 외부 프로그램으로 간주합니다.
+  - `PATH` 환경 변수에 지정된 모든 디렉토리를 순회하며 실행할 프로그램을 찾습니다.
+  - 절대 경로 (`/bin/ls`) 또는 상대 경로로 주어진 프로그램도 실행할 수 있습니다.
+  - 프로그램을 찾지 못하면 `command not found` 오류를 출력합니다.
 
-Time to move on to the next stage!
+- **내장 명령어 (Built-in Commands)**
+  - **`exit [code]`**: 셸을 종료합니다. 선택적으로 종료 코드(0-255)를 지정할 수 있습니다.
+  - **`echo [text]`**: 인자로 받은 텍스트를 표준 출력에 그대로 출력합니다.
+  - **`type [command]`**: 주어진 명령어가 셸 내장 명령어인지, 아니면 `PATH`를 통해 찾은 외부 실행 파일인지 식별하고 그 정보를 출력합니다.
+    - 예: `type echo` -> `echo is a shell builtin`
+    - 예: `type ls` -> `ls is /bin/ls`
+  - **`pwd`**: 현재 작업 중인 디렉토리의 절대 경로를 출력합니다.
+  - **`cd [path]`**: 지정된 경로로 현재 작업 디렉토리를 변경합니다.
+    - `~` 문자를 사용자의 홈 디렉토리로 확장하여 처리합니다.
+    - 존재하지 않는 디렉토리로 이동 시도 시 오류 메시지를 출력합니다.
 
-# Stage 2 & beyond
+- **출력 리디렉션 (Redirection)**
+  - `>` 연산자를 사용하여 명령어의 표준 출력(stdout)을 지정된 파일로 리디렉션합니다. 파일이 존재하지 않으면 새로 생성하고, 존재하면 덮어씁니다.
+    - 예: `echo hello > file.txt`
+  - `2>` 연산자를 사용하여 명령어의 표준 에러(stderr)를 지정된 파일로 리디렉션합니다.
+    - 예: `invalid_command 2> error.log`
 
-Note: This section is for stages 2 and beyond.
+## 요구사항 및 구현 상세
 
-1. Ensure you have `cmake` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.c`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+이 셸은 PDF에 명시된 요구사항에 따라 단계적으로 개발되었습니다. 각 요구사항과 그에 따른 코드 구현 내용은 다음과 같습니다.
+
+**1. REPL (Read-Eval-Print Loop) 및 기본 오류 처리**
+- **요구사항**: `$` 프롬프트를 표시하고, 사용자 입력을 받아 `[command]: command not found` 형식의 오류를 출력하는 무한 루프를 구현합니다.
+- **구현**:
+    - `main.c`의 `main` 함수 내에 `while(1)` 루프를 생성하여 REPL 구조를 구현했습니다.
+    - `printf("$ ");`를 통해 프롬프트를 출력하고 `fgets`로 사용자 입력을 받습니다.
+    - 초기 단계에서는 모든 명령어를 처리할 수 없으므로, `main` 함수의 `else` 블록에서 `printf("%s: command not found\n", cmd);`를 실행하여 오류 메시지를 출력합니다.
+
+**2. `exit` 내장 명령어**
+- **요구사항**: `exit` 명령어를 받으면 셸을 즉시 종료합니다. 선택적으로 종료 코드를 인자로 받을 수 있습니다.
+- **구현**:
+    - `builtin.c`에 `builtin_exit(char *args)` 함수를 추가했습니다.
+    - 이 함수는 인자 `args`가 있으면 `atoi`로 정수 변환하여 `exit()`에 전달하고, 없으면 `exit(0)`을 호출합니다.
+    - `main.c`에서는 `strstr(cmd, "exit")`을 사용하여 `exit` 명령어를 감지하고 `builtin_exit` 함수를 호출합니다.
+
+**3. `echo` 내장 명령어**
+- **요구사항**: `echo` 명령어와 함께 주어진 인자들을 공백으로 구분하여 표준 출력에 출력하고, 마지막에 개행 문자를 추가합니다.
+- **구현**:
+    - `builtin.c`에 `builtin_echo(char *args)` 함수를 추가했습니다.
+    - 이 함수는 인자로 받은 문자열 `args`를 그대로 `fprintf(stdout, "%s\n", args);`를 통해 출력합니다. (초기 구현)
+    - 이후 따옴표, 리디렉션 등을 처리하기 위해 문자열을 직접 순회하며 문자를 하나씩 출력하는 방식으로 발전했습니다.
+
+**4. `type` 내장 명령어 (기본)**
+- **요구사항**: `type` 명령어는 다른 명령어가 내장 명령어인지 아닌지 확인합니다.
+- **구현**:
+    - `builtin.c`에 `builtin_type(char *envPath, char *args)` 함수와 내장 명령어 목록인 `commandTable` 배열을 추가했습니다.
+    - `builtin_type` 함수는 `commandTable`을 순회하며 `args`와 일치하는 내장 명령어가 있는지 확인합니다.
+    - 일치하는 경우 `[command] is a shell builtin`을, 아니면 `[command]: not found`를 출력합니다.
+
+**5. `PATH`를 사용한 외부 명령어 검색 (`type` 확장)**
+- **요구사항**: `type` 명령어가 내장 명령어를 찾지 못하면, `PATH` 환경 변수에 지정된 디렉토리에서 해당 이름의 실행 파일이 있는지 검색합니다.
+- **구현**:
+    - `builtin_type` 함수를 수정하여, 내장 명령어 목록에 없는 경우 `getenv("PATH")`로 가져온 `PATH` 값을 `strtok`을 이용해 `:` 기준으로 분리합니다.
+    - 각 디렉토리 경로와 명령어 이름을 조합하여 전체 경로를 만듭니다.
+    - `access(pathBuffer, X_OK)` 함수를 사용하여 해당 경로에 파일이 존재하고 실행 권한이 있는지 확인합니다.
+    - 파일을 찾으면 `[command] is [full_path]` 형식으로 출력합니다.
+
+**6. 외부 프로그램 실행**
+- **요구사항**: 내장 명령어가 아닌 경우, `PATH`에서 외부 명령어를 찾아 실행하고 그 결과를 셸에 출력합니다.
+- **구현**:
+    - `builtin.c`에 `executeProgram(char *envPath, char *program, char * args)` 함수를 추가했습니다.
+    - 이 함수는 `type`과 유사하게 `PATH`를 검색하여 실행 파일의 전체 경로를 찾습니다.
+    - `popen(pathBuffer, "r")`을 사용하여 외부 명령어를 실행하고, 그 프로세스의 표준 출력에 대한 파일 포인터를 얻습니다.
+    - `fgets`로 실행 결과를 한 줄씩 읽어와 `printf`로 셸의 표준 출력에 그대로 출력합니다.
+    - `main.c`의 `else` 블록에서 이 함수를 호출하고, 함수가 `FALSE`를 반환하면(프로그램을 찾지 못하면) `command not found` 오류를 출력합니다.
+
+**7. `pwd` 내장 명령어**
+- **요구사항**: `pwd` 명령어를 실행하면 현재 작업 디렉토리의 전체 경로를 출력합니다.
+- **구현**:
+    - `builtin.c`에 `builtin_pwd()` 함수를 추가했습니다.
+    - `getcwd(currentWorkingDir, PATH_MAX)` 함수를 호출하여 운영체제로부터 현재 디렉토리 경로를 얻어와 `printf`로 출력합니다.
+
+**8. `cd` 내장 명령어 (절대/상대 경로, `~` 처리)**
+- **요구사항**: `cd` 명령어로 작업 디렉토리를 변경합니다. 절대 경로, 상대 경로(`.`, `..`), 홈 디렉토리(`~`)를 모두 처리해야 합니다.
+- **구현**:
+    - `builtin.c`에 `builtin_cd(char *args)` 함수를 추가했습니다.
+    - `~` 문자가 인자로 들어오면 `getenv("HOME")`을 사용하여 홈 디렉토리 경로를 얻습니다.
+    - `strtok`을 사용하여 `/`를 기준으로 경로를 파싱하고, 이를 조합하여 이동할 디렉토리의 전체 경로 문자열을 만듭니다.
+    - `access(moveWorkingDir, X_OK)`로 디렉토리 존재 여부 및 접근 권한을 확인한 후, `chdir(moveWorkingDir)` 함수를 호출하여 실제 작업 디렉토리를 변경합니다.
+    - 디렉토리가 존재하지 않으면 `cd: [path]: No such file or directory` 오류를 출력합니다.
+
+**9. 따옴표 처리 (`echo` 확장)**
+- **요구사항**: `echo` 명령어에서 작은따옴표(`'`)와 큰따옴표(`"`)를 처리합니다. 따옴표 안의 공백은 유지되고, 따옴표 자체는 출력되지 않습니다.
+- **구현**:
+    - `builtin_echo` 함수 내에 `in_single_quote`, `in_double_quote` 상태 변수를 추가했습니다.
+    - 인자 문자열을 한 글자씩 순회하면서, 현재 따옴표 상태에 따라 문자를 출력할지 결정합니다.
+    - 예를 들어, 작은따옴표 안에 있을 때는 작은따옴표를 제외한 모든 문자를 그대로 출력합니다.
+
+**10. 이스케이프 문자 처리 (`echo` 확장)**
+- **요구사항**: `echo` 명령어에서 백슬래시(`\`) 이스케이프 문자를 처리합니다. 따옴표 밖에서는 특수 문자를 이스케이프하고, 큰따옴표 안에서는 `\"`, `\\` 등을 처리합니다.
+- **구현**:
+    - `builtin_echo` 함수의 문자 순회 로직에 백슬래시 감지 부분을 추가했습니다.
+    - 백슬래시(`\`)를 만나면, 현재 따옴표 상태에 따라 다음 문자를 특별하게 처리할지(예: 큰따옴표 안의 `\"`) 아니면 문자 그대로 출력할지 결정합니다.
+
+**11. 출력 리디렉션 (`>`, `2>`)**
+- **요구사항**: `>`를 사용하여 표준 출력을, `2>`를 사용하여 표준 에러를 파일로 리디렉션합니다.
+- **구현**:
+    - `builtin_echo` 함수에서 `strstr`를 사용하여 `>` 또는 `2>` 연산자가 있는지 확인합니다.
+    - 연산자를 찾으면 해당 위치를 기준으로 파일 경로를 분리합니다.
+    - `fopen`을 사용하여 리디렉션할 파일을 쓰기 모드(`"w"`)로 엽니다.
+    - 기존의 `stdout` 대신 `fopen`으로 얻은 `FILE` 포인터에 `fprintf`를 사용하여 결과를 씁니다.
+    - 작업 완료 후 `fclose`로 파일 포인터를 닫습니다.
+
+## 빌드 및 실행 방법
+
+이 프로젝트는 `cmake`를 사용하여 빌드합니다.
+
+### 요구사항
+
+- `cmake`
+- C 컴파일러 (e.g., `gcc` or `clang`)
+- `vcpkg` (의존성 관리를 위해)
+
+### 로컬에서 빌드 및 실행 (CodeCrafters 스크립트 사용)
+
+1.  **프로젝트 컴파일**:
+    리포지토리 루트 디렉토리에서 다음 스크립트를 실행하여 프로젝트를 컴파일합니다. 이 스크립트는 `build` 디렉토리를 생성하고 그 안에 `shell` 실행 파일을 빌드합니다.
+
+    ```bash
+    ./your_program.sh
+    ```
+
+2.  **셸 실행**:
+    위 스크립트는 컴파일 후 자동으로 셸을 실행합니다. 만약 수동으로 실행하고 싶다면 다음 명령어를 사용하세요.
+
+    ```bash
+    ./build/shell
+    ```
+
+### 로컬에서 GCC로 빌드 및 실행 (Ubuntu 22.04)
+
+Ubuntu 22.04 환경에서 `gcc`를 사용하여 직접 빌드하고 실행하는 방법입니다.
+
+1.  **프로젝트 컴파일**:
+    `readline` 라이브러리를 링크하여 소스 파일을 컴파일합니다.
+
+    ```bash
+    gcc src/main.c src/builtin.c src/utils.c -lreadline -o a.out
+    ```
+
+2.  **셸 실행**:
+    컴파일된 실행 파일을 실행합니다.
+
+    ```bash
+    ./a.out
+    ```
