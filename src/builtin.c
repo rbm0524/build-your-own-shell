@@ -95,6 +95,10 @@ void builtin_echo(char *args) {
   fprintf(buffer, "%s", "\n"); // 커서가 맨 끝으로 이동한다.
   // rewind(buffer); // 되감기
 
+  if(buffer != stdout) {
+    fclose(buffer);
+  }
+
   if(errorFile != NULL) {
     fclose(errorFile); // 2> 로 연 파일 닫기
   }
