@@ -26,7 +26,7 @@ void builtin_echo(char *args) {
   int in_single_quote = 0;
   int in_double_quote = 0;
   FILE *buffer = stdout;
-  int isErrBuffer = FALSE;
+  FILE *errorFile = NULL;
 
   char *existRedirect = strstr(args, ">");
   char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
@@ -34,15 +34,15 @@ void builtin_echo(char *args) {
     *existRedirect = '\0';
     if(*(existRedirect - 1) == '1') {
       *(existRedirect - 1) = ' ';
+      buffer = fopen(redirectPath, "w");
     } else if(*(existRedirect - 1) == '2') {
       *(existRedirect - 1) = ' ';
-      isErrBuffer = TRUE;
+      errorFile = fopen(redirectPath, "w");
     }
     ltrim(&redirectPath);
     rtrim(redirectPath);
     ltrim(&args);
     rtrim(args);
-    buffer = fopen(redirectPath, "w+");
   }
 
   while(*(args+i) != '\0') {
@@ -76,6 +76,10 @@ void builtin_echo(char *args) {
         }
       }
     }
+
+    if (ferror(buffer) && errorFile != NULL) {
+      fprintf(errorFile, "echo: write error\n"); // 2>로 지정된 파일에 에러 씀
+    }
     
     if(*(args+i) == '\'' && !in_double_quote) {
       in_single_quote = !in_single_quote;
@@ -89,18 +93,12 @@ void builtin_echo(char *args) {
   }
   
   fprintf(buffer, "%s", "\n"); // 커서가 맨 끝으로 이동한다.
-  rewind(buffer); // 되감기
+  // rewind(buffer); // 되감기
 
-  if(buffer != stdout) {
-    char copybuffer[512];
-    while(fgets(copybuffer, sizeof(copybuffer), buffer) != NULL){
-      if(isErrBuffer) {
-        fprintf(stderr, "%s", copybuffer);
-      }
-      // printf("%s", copybuffer);
-    }
-    fclose(buffer);
+  if(errorFile != NULL) {
+    fclose(errorFile); // 2> 로 연 파일 닫기
   }
+
 }
 
 void builtin_type(char *envPath, char *args) {
@@ -166,6 +164,10 @@ int executeProgram(char *envPath, char *program, char * args) {
           */
           snprintf(pathBuffer, sizeof(pathBuffer), "%s %s", program, args);
         }
+
+        if(strstr(args, "2>")) {
+
+        }
         
         FILE *fp = popen(pathBuffer, "r"); // 명령과 모드, 실행 결과는 fp에 저장된다.
         
@@ -174,7 +176,7 @@ int executeProgram(char *envPath, char *program, char * args) {
         }
         
         char copybuffer[512];
-        char *totalBuffer = malloc(1024 * 1024);
+        char *totalBuffer = (char*)malloc(sizeof(copybuffer));
         while(fgets(copybuffer, sizeof(copybuffer), fp) != NULL){
           /*
           if(printbuffer == stderr) {
