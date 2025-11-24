@@ -32,17 +32,22 @@ void builtin_echo(char *args) {
   char *redirectPath = existRedirect == NULL ? NULL : existRedirect + 1;
   if(existRedirect != NULL) {
     *existRedirect = '\0';
+    ltrim(&redirectPath);
+    rtrim(redirectPath);
+
     if(*(existRedirect - 1) == '1') {
       *(existRedirect - 1) = ' ';
+      ltrim(&args);
+      rtrim(args);
       buffer = fopen(redirectPath, "w");
     } else if(*(existRedirect - 1) == '2') {
       *(existRedirect - 1) = ' ';
+      ltrim(&args);
+      rtrim(args);
       errorFile = fopen(redirectPath, "w");
     }
-    ltrim(&redirectPath);
-    rtrim(redirectPath);
-    ltrim(&args);
-    rtrim(args);
+    
+
   }
 
   while(*(args+i) != '\0') {
