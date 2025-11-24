@@ -186,7 +186,6 @@ int executeProgram(char *envPath, char *program, char * args) {
         }
         
         char copybuffer[512];
-        char *totalBuffer = (char*)malloc(sizeof(copybuffer));
         while(fgets(copybuffer, sizeof(copybuffer), fp) != NULL){
           /*
           if(printbuffer == stderr) {
@@ -194,16 +193,13 @@ int executeProgram(char *envPath, char *program, char * args) {
             }
             */
             //fprintf(printbuffer, "%s", copybuffer);
-            strcat(totalBuffer, copybuffer);
+            fprintf(printbuffer, "%s", copybuffer);
             
             // printf("%s", copybuffer);
           }
           
-          int exitCode = pclose(fp);
+          pclose(fp);
 
-          if (exitCode == 0) {
-            fprintf(printbuffer, "%s", totalBuffer);
-          }
           if(printbuffer != stdout) {
             fclose(printbuffer);
           }
